@@ -19,7 +19,7 @@ class Session {
 }
 
 Future<Session?> login() async {
-  print("===== Login =====");
+  // print("===== Login =====");
   stdout.write("Username: ");
   final username = stdin.readLineSync()?.trim();
   stdout.write("Password: ");
