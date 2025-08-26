@@ -171,7 +171,7 @@ Future<void> addExpense(int userId) async {
   }
   final data = jsonDecode(resp.body);
   if (data['ok'] == true) {
-    print("Expense added successfully (ID: ${data['id']})\n");
+    print("Expense added successfully\n");
   } else {
     print("Unexpected response: ${resp.body}\n");
   }
