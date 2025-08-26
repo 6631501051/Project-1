@@ -95,7 +95,7 @@ Future<void> showAll(int userId) async {
   print("------------ All expenses ------------");
   for (int i = 0; i < rows.length; i++) {
     final r = rows[i];
-    print("${r['id']}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
+    print("${i + 1}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
   }
   print("Total expenses = ${total}฿\n");
 }
@@ -113,7 +113,7 @@ Future<void> showToday(int userId) async {
   print("---------- Today's expenses ----------");
   for (int i = 0; i < rows.length; i++) {
     final r = rows[i];
-    print("${r['id']}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
+    print("${i + 1}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
   }
   print("Total expenses = ${total}฿\n");
 }
@@ -143,7 +143,7 @@ Future<void> searchExpense(int userId) async {
   }
   for (int i = 0; i < rows.length; i++) {
     final r = rows[i];
-    print("${r['id']}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
+    print("${i + 1}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
   }
   print("Total expenses = ${total}฿\n");
 }
