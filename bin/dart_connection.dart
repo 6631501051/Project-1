@@ -178,6 +178,59 @@ Future<void> addExpense(int userId) async {
 }
 
 Future<void> deleteExpense(int userId) async {
+  // Fetch all expenses for the user
+  final url = Uri.parse('http://localhost:3000/expenses?userId=$userId');
+  final resp = await http.get(url);
+  if (resp.statusCode != 200) {
+    print("Error fetching expenses: ${resp.body}\n");
+    return;
+  }
+  final data = jsonDecode(resp.body) as Map<String, dynamic>;
+  final rows = (data['rows'] as List).cast<Map<String, dynamic>>();
+
+  if (rows.isEmpty) {
+    print("No expenses found to delete\n");
+    return;
+  }
+
+  // Display expenses to remind the user
+  print("------------ Your expenses ------------");
+  for (int i = 0; i < rows.length; i++) {
+    final r = rows[i];
+    print("${i + 1}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
+  }
+
+  // Prompt for display number
+  stdout.write("Enter expense number to delete: ");
+  final input = stdin.readLineSync()?.trim();
+  if (input == null || input.isEmpty) {
+    print("Input cannot be empty\n");
+    return;
+  }
+
+  // Parse and validate the display number
+  final displayNumber = int.tryParse(input);
+  if (displayNumber == null || displayNumber < 1 || displayNumber > rows.length) {
+    print("Invalid expense number\n");
+    return;
+  }
+
+  // Map display number to database ID
+  final expenseId = rows[displayNumber - 1]['id'];
+
+  // Send DELETE request
+  final deleteUrl = Uri.parse('http://localhost:3000/expenses/$expenseId?userId=$userId');
+  final deleteResp = await http.delete(deleteUrl);
+  if (deleteResp.statusCode != 200) {
+    print("Error: ${deleteResp.body}\n");
+    return;
+  }
+  final deleteData = jsonDecode(deleteResp.body);
+  if (deleteData['ok'] == true) {
+    print("Expense deleted successfully\n");
+  } else {
+    print("Unexpected response: ${deleteResp.body}\n");
+
   stdout.write("Enter expense ID to delete: ");
   final id = stdin.readLineSync()?.trim();
   if (id == null || id.isEmpty) {
@@ -195,5 +248,6 @@ Future<void> deleteExpense(int userId) async {
     print("Expense deleted successfully\n");
   } else {
     print("Unexpected response: ${resp.body}\n");
+    
   }
 }
