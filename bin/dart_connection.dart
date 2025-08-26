@@ -176,3 +176,24 @@ Future<void> addExpense(int userId) async {
     print("Unexpected response: ${resp.body}\n");
   }
 }
+
+Future<void> deleteExpense(int userId) async {
+stdout.write("Enter expense ID to delete: ");
+final id = stdin.readLineSync()?.trim();
+if (id == null || id.isEmpty) {
+print("ID cannot be empty\n");
+return;
+}
+final url = Uri.parse('http://localhost:3000/expenses/$id?userId=$userId');
+final resp = await http.delete(url);
+if (resp.statusCode != 200) {
+print("Error: ${resp.body}\n");
+return;
+}
+final data = jsonDecode(resp.body);
+if (data['ok'] == true) {
+print("Expense deleted successfully\n");
+} else {
+print("Unexpected response: ${resp.body}\n");
+}
+}
