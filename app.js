@@ -130,18 +130,44 @@ app.post('/expenses', (req, res) => {
     });
 });
 
-// Delete an expense by ID
+// Delete an expense by display number
 app.delete('/expenses/:id', (req, res) => {
-  const expenseId = req.params.id;
-  const userId = req.query.userId;
-  if (!userId || !expenseId) return res.status(400).send("Missing userId or expenseId");
-  const sql = "DELETE FROM expense WHERE id = ? AND user_id = ?";
-  con.query(sql, [expenseId, userId], (err, result) => {
-    if (err) return res.status(500).send("Database server error");
-    if (result.affectedRows === 0) return res.status(404).send("Expense not found or not authorized");
-    res.json({ ok: true });
-  });
+    const displayNumber = parseInt(req.params.id);
+    const userId = req.query.userId;
+    if (!userId || !displayNumber || isNaN(displayNumber)) {
+        return res.status(400).send("Missing or invalid userId or display number");
+    }
+
+    // Fetch all expenses for the user to map display number to database ID
+    const fetchSql = `
+        SELECT id
+        FROM expense
+        WHERE user_id = ?
+        ORDER BY date ASC
+    `;
+    con.query(fetchSql, [userId], (err, rows) => {
+        if (err) return res.status(500).send("Database server error");
+        if (rows.length === 0) return res.status(404).send("No expenses found");
+        if (displayNumber < 1 || displayNumber > rows.length) {
+            return res.status(400).send("Invalid display number");
+        }
+
+        // Map display number to database ID
+        const expenseId = rows[displayNumber - 1].id;
+
+        // Delete the expense
+        const deleteSql = "DELETE FROM expense WHERE id = ? AND user_id = ?";
+        con.query(deleteSql, [expenseId, userId], (err, result) => {
+            if (err) return res.status(500).send("Database server error");
+            if (result.affectedRows === 0) {
+                return res.status(404).send("Expense not found or not authorized");
+            }
+            res.json({ ok: true });
+        });
+    });
 });
+
+
 
 // ---------- Server starts here ---------
 const PORT = 3000;
