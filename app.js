@@ -68,7 +68,7 @@ app.get('/expenses', (req, res) => {
   if (!userId) return res.status(400).send("Missing userId");
 
   const sql = `
-    SELECT item, paid, date
+    SELECT id,item, paid, date
     FROM expense
     WHERE user_id = ?
     ORDER BY date ASC
@@ -86,7 +86,7 @@ app.get('/expenses/today', (req, res) => {
   if (!userId) return res.status(400).send("Missing userId");
 
   const sql = `
-    SELECT item, paid, date
+    SELECT id,item, paid, date
     FROM expense
     WHERE user_id = ? AND DATE(date) = CURDATE()
     ORDER BY date ASC
