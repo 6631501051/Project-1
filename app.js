@@ -120,13 +120,14 @@ app.get('/expenses/search', (req, res) => {
 
 // Add a new expense
 app.post('/expenses', (req, res) => {
-  const { userId, item, paid, date } = req.body;
-  if (!userId || !item || !paid || !date) return res.status(400).send("Missing required fields");
-  const sql = "INSERT INTO expense (user_id, item, paid, date) VALUES (?, ?, ?, ?)";
-  con.query(sql, [userId, item, paid, date], (err, result) => {
-    if (err) return res.status(500).send("Database server error");
-    res.json({ ok: true, id: result.insertId });
-  });
+    const { userId, item, paid } = req.body;
+    if (!userId || !item || !paid) return res.status(400).send("Missing required fields");
+
+    const sql = "INSERT INTO expense (user_id, item, paid, date) VALUES (?, ?, ?, CURDATE())";
+    con.query(sql, [userId, item, paid], (err, result) => {
+        if (err) return res.status(500).send("Database server error");
+        res.json({ ok: true, id: result.insertId });
+    });
 });
 
 // Delete an expense by ID
