@@ -153,27 +153,18 @@ Future<void> addExpense(int userId) async {
   final item = stdin.readLineSync()?.trim();
   stdout.write("Enter amount paid: ");
   final paid = stdin.readLineSync()?.trim();
-  stdout.write("Enter date (YYYY-MM-DD): ");
-  final date = stdin.readLineSync()?.trim();
-  if (item == null ||
-      paid == null ||
-      date == null ||
-      item.isEmpty ||
-      paid.isEmpty ||
-      date.isEmpty) {
+
+  if (item == null || paid == null || item.isEmpty || paid.isEmpty) {
     print("Incomplete input\n");
     return;
   }
+
   final url = Uri.parse('http://localhost:3000/expenses');
-  final resp = await http.post(
-    url,
-    body: {
-      "userId": userId.toString(),
-      "item": item,
-      "paid": paid,
-      "date": date,
-    },
-  );
+  final resp = await http.post(url, body: {
+    "userId": userId.toString(),
+    "item": item,
+    "paid": paid
+  });
   if (resp.statusCode != 200) {
     print("Error: ${resp.body}\n");
     return;
