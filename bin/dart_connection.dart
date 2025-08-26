@@ -138,3 +138,41 @@ Future<void> searchExpense(int userId) async {
   }
   print("Total expenses = ${total}฿\n");
 }
+
+Future<void> addExpense(int userId) async {
+  stdout.write("Enter item name: ");
+  final item = stdin.readLineSync()?.trim();
+  stdout.write("Enter amount paid: ");
+  final paid = stdin.readLineSync()?.trim();
+  stdout.write("Enter date (YYYY-MM-DD): ");
+  final date = stdin.readLineSync()?.trim();
+  if (item == null ||
+      paid == null ||
+      date == null ||
+      item.isEmpty ||
+      paid.isEmpty ||
+      date.isEmpty) {
+    print("Incomplete input\n");
+    return;
+  }
+  final url = Uri.parse('http://localhost:3000/expenses');
+  final resp = await http.post(
+    url,
+    body: {
+      "userId": userId.toString(),
+      "item": item,
+      "paid": paid,
+      "date": date,
+    },
+  );
+  if (resp.statusCode != 200) {
+    print("Error: ${resp.body}\n");
+    return;
+  }
+  final data = jsonDecode(resp.body);
+  if (data['ok'] == true) {
+    print("Expense added successfully (ID: ${data['id']})\n");
+  } else {
+    print("Unexpected response: ${resp.body}\n");
+  }
+}
