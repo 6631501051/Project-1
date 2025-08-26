@@ -57,8 +57,11 @@ Future<void> menuLoop(Session s) async {
     print("========= Expense Tracking App =========");
     print("1. Show all");
     print("2. Today's expense");
-    print("3. Exit");
-    stdout.write("Choose...");
+    print("3. Search");
+    print("4. Add expense");
+    print("5. Delete expense");
+    print("6. Exit");
+    stdout.write("Choose... ");
 
     final choice = stdin.readLineSync()?.trim();
     if (choice == '1') {
@@ -66,6 +69,12 @@ Future<void> menuLoop(Session s) async {
     } else if (choice == '2') {
       await showToday(s.userId);
     } else if (choice == '3') {
+      await searchExpense(s.userId);
+    } else if (choice == '4') {
+      await addExpense(s.userId);
+    } else if (choice == '5') {
+      await deleteExpense(s.userId);
+    } else if (choice == '6') {
       break;
     } else {
       print("Invalid choice\n");
@@ -134,7 +143,7 @@ Future<void> searchExpense(int userId) async {
   }
   for (int i = 0; i < rows.length; i++) {
     final r = rows[i];
-    print("${r['id']}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
+    print("${i + 1}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
   }
   print("Total expenses = ${total}฿\n");
 }
@@ -144,34 +153,25 @@ Future<void> addExpense(int userId) async {
   final item = stdin.readLineSync()?.trim();
   stdout.write("Enter amount paid: ");
   final paid = stdin.readLineSync()?.trim();
-  stdout.write("Enter date (YYYY-MM-DD): ");
-  final date = stdin.readLineSync()?.trim();
-  if (item == null ||
-      paid == null ||
-      date == null ||
-      item.isEmpty ||
-      paid.isEmpty ||
-      date.isEmpty) {
+
+  if (item == null || paid == null || item.isEmpty || paid.isEmpty) {
     print("Incomplete input\n");
     return;
   }
+
   final url = Uri.parse('http://localhost:3000/expenses');
-  final resp = await http.post(
-    url,
-    body: {
-      "userId": userId.toString(),
-      "item": item,
-      "paid": paid,
-      "date": date,
-    },
-  );
+  final resp = await http.post(url, body: {
+    "userId": userId.toString(),
+    "item": item,
+    "paid": paid
+  });
   if (resp.statusCode != 200) {
     print("Error: ${resp.body}\n");
     return;
   }
   final data = jsonDecode(resp.body);
   if (data['ok'] == true) {
-    print("Expense added successfully (ID: ${data['id']})\n");
+    print("Expense added successfully\n");
   } else {
     print("Unexpected response: ${resp.body}\n");
   }
@@ -230,5 +230,24 @@ Future<void> deleteExpense(int userId) async {
     print("Expense deleted successfully\n");
   } else {
     print("Unexpected response: ${deleteResp.body}\n");
+
+  stdout.write("Enter expense ID to delete: ");
+  final id = stdin.readLineSync()?.trim();
+  if (id == null || id.isEmpty) {
+    print("ID cannot be empty\n");
+    return;
+  }
+  final url = Uri.parse('http://localhost:3000/expenses/$id?userId=$userId');
+  final resp = await http.delete(url);
+  if (resp.statusCode != 200) {
+    print("Error: ${resp.body}\n");
+    return;
+  }
+  final data = jsonDecode(resp.body);
+  if (data['ok'] == true) {
+    print("Expense deleted successfully\n");
+  } else {
+    print("Unexpected response: ${resp.body}\n");
+    
   }
 }
