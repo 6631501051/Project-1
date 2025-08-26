@@ -99,20 +99,23 @@ app.get('/expenses/today', (req, res) => {
 });
 
 app.get('/expenses/search', (req, res) => {
-const userId = req.query.userId;
-const keyword = req.query.keyword;
-if (!userId || !keyword) return res.status(400).send("Missing userId or keyword");
-const sql = `
-SELECT id, item, paid, date
-FROM expense
-WHERE user_id = ? AND item LIKE ?
-ORDER BY date ASC
-`;
-con.query(sql, [userId, %${keyword}%], (err, rows) => {
-if (err) return res.status(500).send("Database server error");
-const total = rows.reduce((s, r) => s + Number(r.paid), 0);
-res.json({ rows, total });
-});
+  const userId = req.query.userId;
+  const keyword = req.query.keyword;
+
+  if (!userId || !keyword) return res.status(400).send("Missing userId or keyword");
+
+  const sql = `
+    SELECT item, paid, date
+    FROM expense
+    WHERE user_id = ? AND item LIKE ?
+    ORDER BY date ASC
+  `;
+  
+  con.query(sql, [userId, `%${keyword}%`], (err, rows) => {
+    if (err) return res.status(500).send("Database server error");
+    const total = rows.reduce((s, r) => s + Number(r.paid), 0);
+    res.json({ rows, total });
+  });
 });
 
 
