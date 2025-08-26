@@ -25,13 +25,19 @@ Future<Session?> login() async {
   stdout.write("Password: ");
   final password = stdin.readLineSync()?.trim();
 
-  if (username == null || password == null || username.isEmpty || password.isEmpty) {
+  if (username == null ||
+      password == null ||
+      username.isEmpty ||
+      password.isEmpty) {
     print("Incomplete input");
     return null;
   }
 
   final url = Uri.parse('http://localhost:3000/login');
-  final resp = await http.post(url, body: {"username": username, "password": password});
+  final resp = await http.post(
+    url,
+    body: {"username": username, "password": password},
+  );
   if (resp.statusCode == 200) {
     final data = jsonDecode(resp.body);
     if (data is Map && data['ok'] == true) {
@@ -99,6 +105,36 @@ Future<void> showToday(int userId) async {
   for (int i = 0; i < rows.length; i++) {
     final r = rows[i];
     print("${i + 1}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
+  }
+  print("Total expenses = ${total}฿\n");
+}
+
+Future<void> searchExpense(int userId) async {
+  stdout.write("Enter search keyword: ");
+  final keyword = stdin.readLineSync()?.trim();
+  if (keyword == null || keyword.isEmpty) {
+    print("Keyword cannot be empty\n");
+    return;
+  }
+  final url = Uri.parse(
+    'http://localhost:3000/expenses/search?userId=$userId&keyword=$keyword',
+  );
+  final resp = await http.get(url);
+  if (resp.statusCode != 200) {
+    print("Error: ${resp.body}\n");
+    return;
+  }
+  final data = jsonDecode(resp.body) as Map<String, dynamic>;
+  final rows = (data['rows'] as List).cast<Map<String, dynamic>>();
+  final total = data['total'];
+  print("---------- Search results ----------");
+  if (rows.isEmpty) {
+    print("No items found containing '$keyword'\n");
+    return;
+  }
+  for (int i = 0; i < rows.length; i++) {
+    final r = rows[i];
+    print("${r['id']}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
   }
   print("Total expenses = ${total}฿\n");
 }
