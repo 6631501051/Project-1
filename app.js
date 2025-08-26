@@ -19,43 +19,6 @@ app.get('/password/:pass', (req, res) => {
     });
 });
 
-// ALL expenses of a user
-app.get('/expenses', (req, res) => {
-  const userId = req.query.userId;
-  if (!userId) return res.status(400).send("Missing userId");
-
-  const sql = `
-    SELECT item, paid, date
-    FROM expense
-    WHERE user_id = ?
-    ORDER BY date ASC
-  `;
-  con.query(sql, [userId], (err, rows) => {
-    if (err) return res.status(500).send("Database server error");
-    const total = rows.reduce((s, r) => s + Number(r.paid), 0);
-    res.json({ rows, total });
-  });
-});
-
-// TODAY's expenses of a user
-app.get('/expenses/today', (req, res) => {
-  const userId = req.query.userId;
-  if (!userId) return res.status(400).send("Missing userId");
-
-  const sql = `
-    SELECT item, paid, date
-    FROM expense
-    WHERE user_id = ? AND DATE(date) = CURDATE()
-    ORDER BY date ASC
-  `;
-  con.query(sql, [userId], (err, rows) => {
-    if (err) return res.status(500).send("Database server error");
-    const total = rows.reduce((s, r) => s + Number(r.paid), 0);
-    res.json({ rows, total });
-  });
-});
-
-
 // login
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
@@ -98,6 +61,43 @@ app.post('/register', (req, res) => {
         });
     });
 });
+
+// ALL expenses of a user
+app.get('/expenses', (req, res) => {
+  const userId = req.query.userId;
+  if (!userId) return res.status(400).send("Missing userId");
+
+  const sql = `
+    SELECT item, paid, date
+    FROM expense
+    WHERE user_id = ?
+    ORDER BY date ASC
+  `;
+  con.query(sql, [userId], (err, rows) => {
+    if (err) return res.status(500).send("Database server error");
+    const total = rows.reduce((s, r) => s + Number(r.paid), 0);
+    res.json({ rows, total });
+  });
+});
+
+// TODAY's expenses of a user
+app.get('/expenses/today', (req, res) => {
+  const userId = req.query.userId;
+  if (!userId) return res.status(400).send("Missing userId");
+
+  const sql = `
+    SELECT item, paid, date
+    FROM expense
+    WHERE user_id = ? AND DATE(date) = CURDATE()
+    ORDER BY date ASC
+  `;
+  con.query(sql, [userId], (err, rows) => {
+    if (err) return res.status(500).send("Database server error");
+    const total = rows.reduce((s, r) => s + Number(r.paid), 0);
+    res.json({ rows, total });
+  });
+});
+
 
 // ---------- Server starts here ---------
 const PORT = 3000;
