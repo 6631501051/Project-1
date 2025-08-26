@@ -10,13 +10,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // password generator
 app.get('/password/:pass', (req, res) => {
-    const password = req.params.pass;
-    bcrypt.hash(password, 10, function(err, hash) {
-        if(err) {
-            return res.status(500).send('Hashing error');
-        }
-        res.send(hash);
-    });
+  const password = req.params.pass;
+  bcrypt.hash(password, 10, function (err, hash) {
+    if (err) {
+      return res.status(500).send('Hashing error');
+    }
+    res.send(hash);
+  });
 });
 
 // login
@@ -37,29 +37,29 @@ app.post('/login', (req, res) => {
 
 
 app.post('/register', (req, res) => {
-    const {username, password} = req.body;
-    const sql = "SELECT id FROM users WHERE username = ?";
-    con.query(sql, [username], function(err, results) {
-        if(err) {
-            return res.status(500).send("Database server error");
+  const { username, password } = req.body;
+  const sql = "SELECT id FROM users WHERE username = ?";
+  con.query(sql, [username], function (err, results) {
+    if (err) {
+      return res.status(500).send("Database server error");
+    }
+    if (results.length > 0) {
+      return res.status(409).send("Username already exists");
+    }
+    // hash password
+    bcrypt.hash(password, 10, function (err, hash) {
+      if (err) {
+        return res.status(500).send("Hashing error");
+      }
+      const insertSql = "INSERT INTO users (username, password) VALUES (?, ?)";
+      con.query(insertSql, [username, hash], function (err, results) {
+        if (err) {
+          return res.status(500).send("Database server error");
         }
-        if(results.length > 0) {
-            return res.status(409).send("Username already exists");
-        }
-        // hash password
-        bcrypt.hash(password, 10, function(err, hash) {
-            if(err) {
-                return res.status(500).send("Hashing error");
-            }
-            const insertSql = "INSERT INTO users (username, password) VALUES (?, ?)";
-            con.query(insertSql, [username, hash], function(err, results) {
-                if(err) {
-                    return res.status(500).send("Database server error");
-                }
-                res.send("User registered successfully");
-            });
-        });
+        res.send("User registered successfully");
+      });
     });
+  });
 });
 
 // ALL expenses of a user
@@ -110,7 +110,7 @@ app.get('/expenses/search', (req, res) => {
     WHERE user_id = ? AND item LIKE ?
     ORDER BY date ASC
   `;
-  
+
   con.query(sql, [userId, `%${keyword}%`], (err, rows) => {
     if (err) return res.status(500).send("Database server error");
     const total = rows.reduce((s, r) => s + Number(r.paid), 0);
@@ -118,9 +118,19 @@ app.get('/expenses/search', (req, res) => {
   });
 });
 
+// Add a new expense
+app.post('/expenses', (req, res) => {
+  const { userId, item, paid, date } = req.body;
+  if (!userId || !item || !paid || !date) return res.status(400).send("Missing required fields");
+  const sql = "INSERT INTO expense (user_id, item, paid, date) VALUES (?, ?, ?, ?)";
+  con.query(sql, [userId, item, paid, date], (err, result) => {
+    if (err) return res.status(500).send("Database server error");
+    res.json({ ok: true, id: result.insertId });
+  });
+});
 
 // ---------- Server starts here ---------
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log('Server is running at ' + PORT);
+  console.log('Server is running at ' + PORT);
 });
