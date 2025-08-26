@@ -129,6 +129,19 @@ app.post('/expenses', (req, res) => {
   });
 });
 
+// Delete an expense by ID
+app.delete('/expenses/:id', (req, res) => {
+  const expenseId = req.params.id;
+  const userId = req.query.userId;
+  if (!userId || !expenseId) return res.status(400).send("Missing userId or expenseId");
+  const sql = "DELETE FROM expense WHERE id = ? AND user_id = ?";
+  con.query(sql, [expenseId, userId], (err, result) => {
+    if (err) return res.status(500).send("Database server error");
+    if (result.affectedRows === 0) return res.status(404).send("Expense not found or not authorized");
+    res.json({ ok: true });
+  });
+});
+
 // ---------- Server starts here ---------
 const PORT = 3000;
 app.listen(PORT, () => {
