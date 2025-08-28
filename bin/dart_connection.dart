@@ -197,7 +197,7 @@ Future<void> deleteExpense(int userId) async {
   print("------------ Your expenses ------------");
   for (int i = 0; i < rows.length; i++) {
     final r = rows[i];
-    print("${r['id']}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
+    print("${i + 1}. ${r['item']} : ${r['paid']}฿ : ${r['date']}");
   }
 
   // Prompt for display number
