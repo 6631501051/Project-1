@@ -105,7 +105,7 @@ app.get('/expenses/search', (req, res) => {
   if (!userId || !keyword) return res.status(400).send("Missing userId or keyword");
 
   const sql = `
-    SELECT item, paid, date
+    SELECT id,item, paid, date
     FROM expense
     WHERE user_id = ? AND item LIKE ?
     ORDER BY date ASC
@@ -123,7 +123,7 @@ app.post('/expenses', (req, res) => {
     const { userId, item, paid } = req.body;
     if (!userId || !item || !paid) return res.status(400).send("Missing required fields");
 
-    const sql = "INSERT INTO expense (user_id, item, paid, date) VALUES (?, ?, ?, CURDATE())";
+    const sql = "INSERT INTO expense (user_id, item, paid, date) VALUES (?, ?, ?, NOW())";
     con.query(sql, [userId, item, paid], (err, result) => {
         if (err) return res.status(500).send("Database server error");
         res.json({ ok: true, id: result.insertId });
